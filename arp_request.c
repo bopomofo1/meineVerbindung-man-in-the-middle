@@ -41,14 +41,16 @@ int arp_request(in_addr_t targetIP, libnet_t *l)
         == -1
     )
         libnet_fatal(libnet_geterror(l));
-
+    
 
     // Build ETHERNET-Packet
     if(libnet_autobuild_ethernet((const uint8_t *)&broadcastMac.ether_addr_octet, ETHERTYPE_ARP, l) == -1)
         libnet_fatal(libnet_geterror(l));
 
     // Send
-    libnet_write(l);
+    for(int i = 0; i < 1; i++)
+    if(libnet_write(l) == -1)
+        libnet_fatal(libnet_geterror(l));
 
     /* Listen for ARP-Reply*/
 }
