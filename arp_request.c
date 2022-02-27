@@ -48,9 +48,7 @@ int arp_request(in_addr_t targetIP, libnet_t *l)
         libnet_fatal(libnet_geterror(l));
 
     // Send
-    for(int i = 0; i < 1; i++)
     if(libnet_write(l) == -1)
         libnet_fatal(libnet_geterror(l));
-
-    /* Listen for ARP-Reply*/
+    
 }
