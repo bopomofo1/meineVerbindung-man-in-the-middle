@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "ether.h": "c",
+        "unistd.h": "c"
+    }
+}
