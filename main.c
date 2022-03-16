@@ -119,11 +119,11 @@ int main(int argc, char *argv[])
     printf("\n-------------------------------\n\n");
 
     // Request Target 2
-    printf("Ziel \033[34m%s\033[39m: sende ARP-requests... \n", argv[2]);
+    printf("Ziel \033[34m#2\033[39m: sende ARP-requests... \n");
     arp_request(target2_ip, l);
 
     // Receive Target 2
-    printf("Ziel \033[34m%s\033[39m: suche nach ARP-replys...\n", argv[2]);
+    printf("Ziel \033[34m#2\033[39m: suche nach ARP-replys...\n");
     // while(arp_receive(handle, target2_ip, target2_mac) != 0) {sleep(1); arp_request(target2_ip, l);}
 
     /* 
