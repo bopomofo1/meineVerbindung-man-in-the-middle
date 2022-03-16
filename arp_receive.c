@@ -25,7 +25,7 @@ int arp_receive(pcap_t *handle, uint32_t senderIP, uint8_t *sender_mac)
     //for(int i = 0; i < 5000; i++)
     {
         packet = pcap_next(handle, (struct pcap_pkthdr *)&hdr);
-        arphdr = packet + ETH_HLEN;
+        arphdr = (struct ether_arp *)(packet + ETH_HLEN);
         uint32_t *ip_ptr = (uint32_t *)arphdr->arp_spa;      
         if(ntohs(arphdr->ea_hdr.ar_op) == ARPOP_REPLY && ntohs(arphdr->ea_hdr.ar_hrd) == ARPHRD_ETHER && ntohs(arphdr->ea_hdr.ar_pro) == 0x800 && *ip_ptr == senderIP)
         {

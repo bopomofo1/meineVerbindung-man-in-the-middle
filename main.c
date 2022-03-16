@@ -8,7 +8,7 @@
 
 void set_packet_filter(pcap_t *handle, char *filter_opt);
 
-void arp_poison_thread(void *arg_ptr);
+void* arp_poison_thread(void *arg_ptr);
 
 struct data_pass
 {
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
     poison_data.target2_mac = target2_mac;
 
     // create new thread for executing the arp_poison function
-    pthread_create(&t_poison, NULL, arp_poison_thread, &poison_data);
+    pthread_create(&t_poison, NULL, arp_poison_thread , (void *)&poison_data);
 
     // make filter for tcp
     strcpy(filter_str, "(src host ");
@@ -160,8 +160,8 @@ int main(int argc, char *argv[])
     {
         packet = pcap_next(handle, &pkthdr);
         printf("got %d bytes packet\n", pkthdr.len);
-        ip_header = packet + ETHER_HDR_LEN + 2; // no idea why it is off by 2
-        tcp_header = packet + LIBNET_ETH_H + LIBNET_IPV4_H;
+        ip_header = (struct libnet_ipv4_hdr *)(packet + ETHER_HDR_LEN + 2); // no idea why it is off by 2
+        tcp_header = (struct libnet_tcp_hdr *)(packet + LIBNET_ETH_H + LIBNET_IPV4_H);
         if(pkthdr.len == 0) continue;
 
         // Print if it came from Target 1 or 2
@@ -209,7 +209,7 @@ void set_packet_filter(pcap_t *handle, char *filter_opt)
 
 }
 
-void arp_poison_thread(void *arg_ptr)
+void * arp_poison_thread(void *arg_ptr)
 {
 
     struct data_pass *passed_data = arg_ptr;
