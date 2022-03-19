@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "ether.h": "c",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "stddef.h": "c"
     }
 }
