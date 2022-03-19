@@ -101,7 +101,7 @@ int main()
         while(recv_length > 0) 
         {
             printf("RECV: %d bytes\n", recv_length);
-            dump(buffer,recv_length, 16);
+            dump(buffer,recv_length);
             recv_length = recv(new_sockfd, &buffer, 1024, 0);
         }
         close(new_sockfd);
