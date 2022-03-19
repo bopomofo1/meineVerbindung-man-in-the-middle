@@ -1,6 +1,6 @@
 
 meineVerbindung: main.o
-	gcc -o meineVerbindung main.o arp_reply.o arp_receive.o arp_request.o -lnet -lpcap
+	gcc -o meineVerbindung main.o arp_reply.o arp_receive.o arp_request.o -lnet -lpcap -pthread
 	rm -f main.o
 	rm -f arp_receive.o
 	rm -f arp_request.o
