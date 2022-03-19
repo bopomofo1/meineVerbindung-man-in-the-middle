@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 
     /* Loop goes on until a matching ARP-reply is found */
 
-    //while(arp_receive(handle, target1_ip, target2_mac) != 0) {sleep(1); arp_request(target1_ip, l);}
+    while(arp_receive(handle, target1_ip, target2_mac) != 0) {sleep(1); arp_request(target1_ip, l);}
     
     printf("\n-------------------------------\n\n");
 
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 
     // Receive Target 2
     printf("\033[34m%s\033[39m: suche nach ARP-replys...\n", argv[2]);
-    // while(arp_receive(handle, target2_ip, target2_mac) != 0) {sleep(1); arp_request(target2_ip, l);}
+    while(arp_receive(handle, target2_ip, target2_mac) != 0) {sleep(1); arp_request(target2_ip, l);}
 
     /* 
         Start ARP-Poisoning on different thread
