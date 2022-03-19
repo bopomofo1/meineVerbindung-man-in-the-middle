@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
     arp_request(target1_ip, l);
 
     // Receive Target 1
-    printf("Ziel \033[32m%s\033[39m: suche nach ARP-replys...\n", argv[1]);
+    printf("\033[32m%s\033[39m: suche nach ARP-replys...\n", argv[1]);
 
     /* Loop goes on until a matching ARP-reply is found */
 
@@ -119,11 +119,11 @@ int main(int argc, char *argv[])
     printf("\n-------------------------------\n\n");
 
     // Request Target 2
-    printf("Ziel \033[34m#2\033[39m: sende ARP-requests... \n");
+    printf("\033[34m%s\033[39m: sende ARP-requests... \n", argv[2]);
     arp_request(target2_ip, l);
 
     // Receive Target 2
-    printf("Ziel \033[34m#2\033[39m: suche nach ARP-replys...\n");
+    printf("\033[34m%s\033[39m: suche nach ARP-replys...\n", argv[2]);
     // while(arp_receive(handle, target2_ip, target2_mac) != 0) {sleep(1); arp_request(target2_ip, l);}
 
     /* 
