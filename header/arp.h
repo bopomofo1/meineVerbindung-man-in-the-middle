@@ -1,6 +1,15 @@
 #include <libnet.h>
 #include <pcap.h>
 
+
+struct poison_pass
+{
+    libnet_t* l;
+    uint32_t target1_ip, target2_ip;
+    uint8_t *target1_mac, *target2_mac;
+
+};
+
 void libnet_fatal(const char* msg);
 
 int arp_request(in_addr_t targetIP, libnet_t *l);
