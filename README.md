@@ -15,7 +15,7 @@ einschleusen von Nachrichten in unverschlüsselte TCP-Verbindungen
 - [X] ARP-Poisoning starten
 - [X] Pakete empfangen
 - [X] gefälschte TCP-Pakete senden
-- [ ] Entscheiden an wenn man das Paket schicken möchte
+- [ ] Entscheiden an wen man das Paket schicken möchte
 - [ ] desynchrone Sequenznummern synchronisieren
 
 ## Kompilieren
