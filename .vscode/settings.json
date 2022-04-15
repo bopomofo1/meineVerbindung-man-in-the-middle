@@ -2,6 +2,7 @@
     "files.associations": {
         "ether.h": "c",
         "unistd.h": "c",
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "pcap.h": "c"
     }
 }

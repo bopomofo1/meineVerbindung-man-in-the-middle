@@ -1,21 +1,19 @@
 
 meineVerbindung: main.o
-	gcc -o meineVerbindung main.o arp_reply.o arp_receive.o arp_request.o display.o -lnet -lpcap -pthread
+	gcc -o meineVerbindung main.o arp.o hacking.o receive.o -lnet -lpcap
 	rm -f main.o
-	rm -f arp_receive.o
-	rm -f arp_request.o
+	rm -f arp.o
+	rm -f hacking.o
+	rm -f receive.o
 
-main.o: arp_reply.o	
+main.o: receive.o	
 	gcc -c -o main.o main.c  -lnet -lpcap
 
-arp_reply.o: arp_receive.o
-	gcc -c -o arp_reply.o arp_reply.c -lnet -lpcap
+receive.o: arp.o
+	gcc -c -o receive.o receive.c  -lnet -lpcap
 
-arp_receive.o: arp_request.o
-	gcc -c -o arp_receive.o arp_receive.c -lnet -lpcap
+arp.o: hacking.o
+	gcc -c -o arp.o arp.c  -lnet -lpcap
 
-arp_request.o: display.o
-	gcc -c -o arp_request.o arp_request.c -lnet -lpcap
-
-display.o: display.c
-	gcc -c -o display.o display.c -lpcap
+hacking.o: hacking.c
+	gcc -c -o hacking.o hacking.c 
