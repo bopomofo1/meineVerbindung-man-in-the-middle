@@ -2,8 +2,8 @@
 
 
 // sends an ARP-Reply with the own MAC as the source-address
-int arp_reply(uint32_t senderIP, uint32_t targetIP, uint8_t *targetMac, libnet_t *l) 
-{
+    int 
+arp_reply(uint32_t senderIP, uint32_t targetIP, uint8_t *targetMac, libnet_t *l) {
     uint32_t ownIP;
     struct libnet_ether_addr *ownMac;
 

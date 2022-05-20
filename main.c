@@ -10,6 +10,7 @@
 #include "arp/include/arp.h"
 #include "modularity/include/init.h"
 #include "modularity/include/ec_malloc.h"
+#include "modularity/include/thread_data_pass.h"
 
 int main(int argc, char *argv[])
 {
@@ -45,18 +46,18 @@ int main(int argc, char *argv[])
     }
 
 
-    struct poison_pass *pass_poison = ec_malloc(sizeof(struct poison_pass));
-    pass_poison->mac1 = target1_mac;
-    pass_poison->mac2 = target2_mac;
-    pass_poison->ip1 = target1Ip;
-    pass_poison->ip2 = target2Ip;
-    pass_poison->l = l;
+    struct data_pass *data_pass = ec_malloc(sizeof(struct data_pass));
+    data_pass->mac1 = target1_mac;
+    data_pass->mac2 = target2_mac;
+    data_pass->ip1 = target1Ip;
+    data_pass->ip2 = target2Ip;
+    data_pass->l = l;
 
 
     // Start ARP-Poisoning on different thread 
-    pthread_create(&threadPoisonId, NULL, arp_poison, (void *)pass_poison);
+    pthread_create(&threadPoisonId, NULL, arp_poison, (void *)data_pass);
     
     // Start ethernet forwarding on different thread 
-    pthread_create(&threadForwardId, NULL, forward, (void *)pass_poison);
+    pthread_create(&threadForwardId, NULL, forward, (void *)data_pass);
     pthread_join(threadForwardId, NULL);
 }

@@ -3,6 +3,7 @@
         "pcap.h": "c",
         "forward.h": "c",
         "stdio.h": "c",
-        "ec_malloc.h": "c"
+        "ec_malloc.h": "c",
+        "thread_data_pass.h": "c"
     }
 }

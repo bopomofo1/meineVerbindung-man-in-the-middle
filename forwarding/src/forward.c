@@ -1,38 +1,36 @@
 #include "../include/forward.h"
 #include "../../modularity/include/init.h"
 #include "../../modularity/include/ec_malloc.h"
+#include "../../modularity/include/thread_data_pass.h"
+
 
 // forwards all packets ip packets to actual ip packet destination  
 
-void *forward(void *arg_ptr)
-{
-    char *errbuf = ec_mallo(PCAP_ERRBUF_SIZE);
+    void *
+forward(void *arg_ptr) {
+    char *errbuf = ec_malloc(PCAP_ERRBUF_SIZE);
     libnet_t *l = init_libnet_ethernet(errbuf);
     pcap_t *handle = init_pcap(errbuf);
     struct pcap_pkthdr pkthdr;
+    struct data_pass *data_pass = (struct data_pass *)arg_ptr;
 
     // Receive packet
     while(1) 
     {
         u_char *packet = pcap_next(handle, (struct pcap_pkthdr *)&pkthdr);
+
+        // Forward entire Ethernet packet
+
+        struct libnet_ethernet_hdr *ethhdr = packet;
     
-        //Forward entire Ethernet packet
-
-        // Mac-Addresses have to be changed to the real addresses
-        u_char *packetModify = malloc(pkthdr.len);
-        if (packetModify == NULL) 
-        {
-            perror("Error allocating memory\n");
-            exit(EXIT_FAILURE);
-        }
-
+        // Mac-destination-address has to be changed to the real address
+        u_char *packetModify = ec_malloc(pkthdr.len);
         memcpy(packetModify, packet, pkthdr.len);
 
-        eth_hdr = packetModify;
-        memcpy(eth_hdr->ether_dhost, pass_poison->mac2, 6);
+        ethhdr = packetModify;
+        memcpy(ethhdr->ether_dhost, data_pass->mac2, 6);
 
         if(libnet_adv_write_link(l, packetModify, pkthdr.len) == -1)
-            perror(libnet_geterror(l));
-
+            fatal(libnet_geterror(l), "forward.c, line 33");
     }
 }

@@ -1,21 +1,15 @@
 #include "../include/arp.h"
 
-void libnet_fatal(const char* msg)
-{
-    perror(msg);
-    exit(EXIT_FAILURE);
-}
-
 // Sends an ARP-request, asking for the MAC of TargetIP
-int arp_request(in_addr_t targetIP, libnet_t *l)
+    int 
+arp_request(in_addr_t targetIP, libnet_t *l)
 {
     struct libnet_ether_addr broadcastMac;
     struct libnet_ether_addr *ownMac;
     struct libnet_ether_addr targetMac;
     in_addr_t ownIP;
 
-    for(int i = 0; i < 6; i++) 
-    {
+    for(int i = 0; i < 6; i++) {
         broadcastMac.ether_addr_octet[i] = 0xff;
         targetMac.ether_addr_octet[i] = 0x00;
     }

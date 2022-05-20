@@ -2,7 +2,8 @@
 
 // Does arp-poisoning
 
-void *arp_poison(void *arg_ptr) 
+    void *
+arp_poison(void *arg_ptr) 
 {
     struct poison_pass *pass_poison = (struct poison_pass *)arg_ptr;
 
