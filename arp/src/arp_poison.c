@@ -1,6 +1,6 @@
 #include "../include/arp.h"
 
-// Does arp-poisoning
+// Does arp-poisoning with data supplied from data_pass struct
 
     void *
 arp_poison(void *arg_ptr) 

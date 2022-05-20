@@ -1,10 +1,14 @@
 #include "../include/forward.h"
+#include "../include/compare_mac.h"
 #include "../../modularity/include/init.h"
 #include "../../modularity/include/ec_malloc.h"
 #include "../../modularity/include/thread_data_pass.h"
 
 
-// forwards all packets ip packets to actual ip packet destination  
+/*
+*Forwards all ethernet packets to mac1 or mac2, even 
+*if they are actually directed to us
+*/
 
     void *
 forward(void *arg_ptr) {
@@ -18,17 +22,25 @@ forward(void *arg_ptr) {
     while(1) 
     {
         u_char *packet = pcap_next(handle, (struct pcap_pkthdr *)&pkthdr);
-
-        // Forward entire Ethernet packet
-
-        struct libnet_ethernet_hdr *ethhdr = packet;
     
-        // Mac-destination-address has to be changed to the real address
         u_char *packetModify = ec_malloc(pkthdr.len);
         memcpy(packetModify, packet, pkthdr.len);
 
-        ethhdr = packetModify;
-        memcpy(ethhdr->ether_dhost, data_pass->mac2, 6);
+        // Mac-destination-address has to be changed to the real address
+        struct libnet_ethernet_hdr *ethhdr = packetModify;
+
+        if (compare_mac(ethhdr->ether_dhost, data_pass->mac1))
+            memcpy(ethhdr->ether_dhost, data_pass->mac2, 6);
+
+        else if (compare_mac(ethhdr->ether_dhost, data_pass->mac2))
+            memcpy(ethhdr->ether_dhost, data_pass->mac1, 6);
+
+        else
+            continue;
+
+        // Mac-source-address has to be changed to our own mac
+        
+
 
         if(libnet_adv_write_link(l, packetModify, pkthdr.len) == -1)
             fatal(libnet_geterror(l), "forward.c, line 33");
