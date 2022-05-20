@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "../header/hacking.h"
+#include "hacking.h"
 
 #define PORT 7890 // Der Port, mit dem die Benutzer die Verbindung herstellen
 

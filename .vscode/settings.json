@@ -1,8 +1,8 @@
 {
     "files.associations": {
-        "ether.h": "c",
-        "unistd.h": "c",
-        "stddef.h": "c",
-        "pcap.h": "c"
+        "pcap.h": "c",
+        "forward.h": "c",
+        "stdio.h": "c",
+        "ec_malloc.h": "c"
     }
 }
