@@ -1,6 +1,6 @@
 // contains functions to initialise libnet or pcap
 
-#include "init.h"
+#include "../include/init.h"
 
 /* 
 *initialises libnet with injection type LIBNET_LINK_ADV 

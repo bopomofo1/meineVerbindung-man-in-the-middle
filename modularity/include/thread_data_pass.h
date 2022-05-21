@@ -1,5 +1,7 @@
 // Structs to pass data to another thread
 
+#pragma once
+
 #include <libnet.h>
 
 struct data_pass {

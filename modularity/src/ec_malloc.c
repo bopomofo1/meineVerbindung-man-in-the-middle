@@ -1,6 +1,6 @@
 // Provides an error checked malloc function
 
-#include "ec_malloc.h"
+#include "../include/ec_malloc.h"
 
 // An error-checked malloc() wrapper function
     void *

@@ -17,6 +17,10 @@ forward(void *arg_ptr) {
     pcap_t *handle = init_pcap(errbuf);
     struct pcap_pkthdr pkthdr;
     struct data_pass *data_pass = (struct data_pass *)arg_ptr;
+    uint8_t *ownMac = libnet_get_hwaddr(l);
+    if (ownMac == NULL)
+        fatal(libnet_geterror(l), "forward.c, line 20");
+
 
     // Receive packet
     while(1) 
@@ -26,20 +30,24 @@ forward(void *arg_ptr) {
         u_char *packetModify = ec_malloc(pkthdr.len);
         memcpy(packetModify, packet, pkthdr.len);
 
-        // Mac-destination-address has to be changed to the real address
         struct libnet_ethernet_hdr *ethhdr = packetModify;
 
-        if (compare_mac(ethhdr->ether_dhost, data_pass->mac1))
-            memcpy(ethhdr->ether_dhost, data_pass->mac2, 6);
+        // If the source mac is our own mac, we probably already forwarded
+        if (compare_mac(ethhdr->ether_shost, ownMac))
+            continue;
 
-        else if (compare_mac(ethhdr->ether_dhost, data_pass->mac2))
-            memcpy(ethhdr->ether_dhost, data_pass->mac1, 6);
+        // Mac-destination-address has to be changed to the real address
+        if (compare_mac(ethhdr->ether_shost, data_pass->mac1))
+            memcpy((void *)ethhdr->ether_dhost, (void *)data_pass->mac2, 6);
+
+        else if (compare_mac(ethhdr->ether_shost, data_pass->mac2))
+            memcpy((void *)ethhdr->ether_dhost, (void *)data_pass->mac1, 6);
 
         else
             continue;
 
         // Mac-source-address has to be changed to our own mac
-        
+        memcpy((void *)ethhdr->ether_shost, (void *)ownMac, 6);
 
 
         if(libnet_adv_write_link(l, packetModify, pkthdr.len) == -1)

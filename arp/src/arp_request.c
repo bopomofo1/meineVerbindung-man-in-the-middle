@@ -17,7 +17,7 @@ arp_request(in_addr_t targetIP, libnet_t *l)
     ownMac = libnet_get_hwaddr(l);
     ownIP = libnet_get_ipaddr4(l);
     if(ownMac == NULL || ownIP == -1)
-        libnet_fatal(libnet_geterror(l));
+        fatal(libnet_geterror(l), "arp_request.c, line 17-18");
     
     /* Send ARP-Request */
 
@@ -33,15 +33,15 @@ arp_request(in_addr_t targetIP, libnet_t *l)
     )
         == -1
     )
-        libnet_fatal(libnet_geterror(l));
+        fatal(libnet_geterror(l), "arp_request.c, line 25");
     
 
     // Build ETHERNET-Packet
     if(libnet_autobuild_ethernet((const uint8_t *)&broadcastMac.ether_addr_octet, ETHERTYPE_ARP, l) == -1)
-        libnet_fatal(libnet_geterror(l));
+        fatal(libnet_geterror(l), "arp_request.c, line 40");
 
     // Send
     if(libnet_write(l) == -1)
-        libnet_fatal(libnet_geterror(l));
+        fatal(libnet_geterror(l), "arp_request.c, line 44");
     
 }
