@@ -1,10 +1,12 @@
 
 meineVerbindung: main.o
-	gcc -o meineVerbindung main.o usage.o ec_malloc.o error.o init.o forward.o compare_mac.o arp_poison.o arp_reply.o arp_receive.o arp_request.o -lnet -lpcap -pthread
+	gcc -o meineVerbindung main.o usage.o ec_malloc.o error.o init.o forward.o compare_mac.o display_data.o inject.o arp_poison.o arp_reply.o arp_receive.o arp_request.o -lnet -lpcap -pthread
 	rm -f arp_receive.o 
 	rm -f arp_reply.o 
 	rm -f arp_request.o 
 	rm -f arp_poison.o 
+	rm -f inject.o
+	rm -f display_data.o
 	rm -f forward.o 
 	rm -f compare_mac.o
 	rm -f ec_malloc.o
@@ -31,9 +33,14 @@ init.o: forward.o
 forward.o: compare_mac.o
 	gcc -c -o forward.o forwarding/src/forward.c -lnet -lpcap
 
-
-compare_mac.o: arp_poison.o
+compare_mac.o: display_data.o
 	gcc -c -o compare_mac.o forwarding/src/compare_mac.c -lnet -lpcap
+
+display_data.o: inject.o
+	gcc -c -o display_data.o decode/src/display_data.c -lnet -lpcap
+
+inject.o: arp_poison.o
+	gcc -c -o inject.o inject/src/inject.c -lnet
 
 arp_poison.o: arp_reply.o
 	gcc -c -o arp_poison.o arp/src/arp_poison.c -lnet -lpcap

@@ -4,6 +4,7 @@
         "forward.h": "c",
         "stdio.h": "c",
         "ec_malloc.h": "c",
-        "thread_data_pass.h": "c"
+        "thread_data_pass.h": "c",
+        "init.h": "c"
     }
 }

@@ -13,6 +13,6 @@ arp_poison(void *arg_ptr)
         arp_reply(data_pass->ip2, data_pass->ip1, data_pass->mac1, data_pass->l);
         //send a fake arp-reply to target 2 pretending to be target 1
         arp_reply(data_pass->ip1, data_pass->ip2, data_pass->mac2, data_pass->l);
-        sleep(1);
+        sleep(10);
     }
 }
