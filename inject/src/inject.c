@@ -19,6 +19,7 @@ inject(void *arg_ptr) {
         printf("%s", str);
 
         libnet_seed_prand(l);
+
         int tcpTag = libnet_build_tcp (
             ntohs(tcphdr1->th_sport),
             ntohs(tcphdr1->th_dport),
@@ -34,7 +35,7 @@ inject(void *arg_ptr) {
             l,
             0);
         if (tcpTag == -1)
-            fatal(libnet_geterror(l), "inject.c, line 16");
+            fatal(libnet_geterror(l), "inject.c, line 23");
         
         int ipTag = libnet_build_ipv4 (
             LIBNET_IPV4_H + LIBNET_TCP_H + strlen(str), /* length */
@@ -51,10 +52,10 @@ inject(void *arg_ptr) {
             l,                       /* libnet handle */
             0); 
         if (ipTag == -1)
-            fatal(libnet_geterror(l), "inject.c, line 37");
+            fatal(libnet_geterror(l), "inject.c, line 40");
 
         if (libnet_write(l) == -1)
-            fatal(libnet_geterror(l), "inject.c, line 56");
+            fatal(libnet_geterror(l), "inject.c, line 57");
         
         data_pass->dataSentByUs1 += strlen(str);
 
