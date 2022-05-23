@@ -37,7 +37,7 @@ init_pcap(char *errbuf) {
     if(pcap_findalldevs(&ift, (char *)(&errbuf)) == -1)
         fatal("searching for network devices", "init.c, line 37");
 
-     handle = pcap_open_live(ift->name, BUFSIZ, 1, 1, errbuf);
+     handle = pcap_open_live(ift->name, BUFSIZ, 1, 300, errbuf);
      if(handle == NULL)
         fatal(pcap_geterr(handle), "init.c, line 40");
 }

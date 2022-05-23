@@ -2,5 +2,5 @@
 #include <stdlib.h>
 #include <libnet.h>
 
-    void
+    int
 display_data(u_char *packet, uint size);

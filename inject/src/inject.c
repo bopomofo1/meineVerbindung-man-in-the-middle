@@ -58,6 +58,6 @@ inject(void *arg_ptr) {
             fatal(libnet_geterror(l), "inject.c, line 57");
         
         data_pass->dataSentByUs1 += strlen(str);
-
+        libnet_clear_packet(l);
     }
 }
