@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "init.h": "c",
-        "ec_malloc.h": "c"
+        "ec_malloc.h": "c",
+        "arp.h": "c"
     }
 }

@@ -38,7 +38,7 @@ main (int argc, char *argv[]) {
     startBtn = gtk_builder_get_object (builder, "start");
     statusTextview = gtk_builder_get_object (builder, "status");
     chatTextview  = gtk_builder_get_object (builder, "chat");
-    
+
     // Load CSS
     GtkCssProvider *cssProvider = gtk_css_provider_new();
     gtk_css_provider_load_from_path(cssProvider, "CSS/theme.css", NULL);
@@ -47,7 +47,7 @@ main (int argc, char *argv[]) {
                                GTK_STYLE_PROVIDER_PRIORITY_USER);
 
     // This data gets passed to different functions
-    struct startDataPass *startData = malloc(sizeof(struct startDataPass));
+    struct DataPass *startData = malloc(sizeof(struct DataPass));
     startData->ip1Entry = ip1Entry;
     startData->ip2Entry = ip2Entry;
     startData->statusView = statusTextview;

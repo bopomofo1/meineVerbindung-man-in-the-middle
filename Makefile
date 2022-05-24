@@ -7,6 +7,7 @@ OBS = error.o ec_malloc.o init.o arp_poison.o arp_reply.o arp_receive.o arp_requ
 ${PROG}: start.o
 	${CC} ${CFLAGS} -o ${PROG} ${PROG}.c ${OBS} -lnet -lpcap ${LIBS} 
 	rm -f ${OBS}
+	sudo mn --custom z_mininet_testing/project.py --topo=project
 
 start.o: arp_poison.o
 	${CC} ${CFLAGS} -c -o start.o start/src/start.c -lnet -lpcap ${LIBS} 

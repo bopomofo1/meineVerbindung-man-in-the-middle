@@ -4,13 +4,15 @@
 
     void
 start(GtkWidget *widget, gpointer data) {
-    struct startDataPass *dataPass = data;
+    struct DataPass *dataPass = data;
     u_char errbuf[LIBNET_ERRBUF_SIZE];
     libnet_t *l = init_libnet_ethernet(errbuf);
     pcap_t *handle = init_pcap(errbuf);
     uint32_t target1Ip, target2Ip;
     uint8_t *target1_mac = ec_malloc(6);
     uint8_t *target2_mac = ec_malloc(6);
+
+    pthread_t threadForwardId, threadPoisonId;
 
     // Show text in statusTextview
 
@@ -70,7 +72,18 @@ start(GtkWidget *widget, gpointer data) {
         arp_request(target2Ip, l);
     }
     gtk_text_buffer_insert(buffer, &iter, "[X]\n", -1);
+
+    dataPass->l = l;
+    dataPass->ip1 = target1Ip;
+    dataPass->ip2 = target2Ip;
+    dataPass->mac1 = target1_mac;
+    dataPass->mac2 = target2_mac;
+    
+    // Start ARP-Poisoning on different thread 
+    g_thread_new("thread", arp_poison, dataPass);
     gtk_text_buffer_insert(buffer, &iter, "ARP-Poisoning gestartet", -1);
 
+    // Start ip forwarding on different thread 
+    //pthread_create(&threadForwardId, NULL, forward, (void *)dataPass);
 
 }
