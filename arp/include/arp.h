@@ -2,7 +2,7 @@
 #include <pcap.h>
 #include <netinet/if_ether.h>
 #include "../../modularity/include/error.h"
-#include "../../modularity/include/thread_data_pass.h"
+#include "../../modularity/include/data_pass.h"
 
 
     int 
