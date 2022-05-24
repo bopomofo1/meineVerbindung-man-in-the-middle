@@ -18,7 +18,7 @@
               <object class="GtkEntry" id="ip1">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
-                <property name="placeholder-text" translatable="yes">IP </property>
+                <property name="placeholder-text" translatable="yes">IP here</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -30,7 +30,7 @@
               <object class="GtkEntry" id="ip2">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
-                <property name="placeholder-text" translatable="yes">IP </property>
+                <property name="placeholder-text" translatable="yes">IP here</property>
               </object>
               <packing>
                 <property name="expand">True</property>

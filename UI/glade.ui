@@ -18,7 +18,7 @@
               <object class="GtkEntry" id="ip1">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
-                <property name="placeholder-text" translatable="yes">IP here</property>
+                <property name="placeholder-text" translatable="yes">IP </property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -30,7 +30,7 @@
               <object class="GtkEntry" id="ip2">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
-                <property name="placeholder-text" translatable="yes">IP here</property>
+                <property name="placeholder-text" translatable="yes">IP </property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -82,7 +82,7 @@
             <property name="can-focus">False</property>
             <property name="baseline-position">top</property>
             <child>
-              <object class="GtkEntry">
+              <object class="GtkEntry" id="ip1SendEntry">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="hexpand">True</property>
@@ -95,53 +95,40 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry">
+              <object class="GtkButton" id="ip1SendBtn">
+                <property name="label" translatable="yes">senden</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="ip2SendEntry">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
-              <object class="GtkBox">
+              <object class="GtkButton" id="ip2SendBtn">
+                <property name="label" translatable="yes">senden</property>
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="orientation">vertical</property>
-                <property name="homogeneous">True</property>
-                <child>
-                  <object class="GtkButton" id="behalten">
-                    <property name="label" translatable="yes">behalten</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="weiterleiten">
-                    <property name="label" translatable="yes">weiterleiten</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="position">3</property>
               </packing>
             </child>
           </object>
@@ -152,9 +139,16 @@
           </packing>
         </child>
         <child>
-          <object class="GtkTextView" id="chat">
+          <object class="GtkScrolledWindow">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <property name="shadow-type">in</property>
+            <child>
+              <object class="GtkTextView" id="chat">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>

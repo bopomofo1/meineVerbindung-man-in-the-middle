@@ -6,7 +6,16 @@
 #include "../../modularity/include/data_pass.h"
 #include "../../modularity/include/init.h"
 #include "../../arp/include/arp.h"
-#include "../../forwarding/include/forward.h"
+#include "../../forwarding/include/send_tcp.h"
+
+
+
+/*
+* Sends text in textentry 1 to target 1
+*/
 
     void
-start(GtkWidget *widget, gpointer data);
+send1(GtkWidget *widget, gpointer data);
+
+    void
+send2(GtkWidget *widget, gpointer data);

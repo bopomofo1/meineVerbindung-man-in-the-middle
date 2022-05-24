@@ -15,5 +15,5 @@ arp_receive(pcap_t *handle, uint32_t senderIP, uint8_t *sender_mac);
     int 
 arp_reply(uint32_t senderIP, uint32_t targetIP, uint8_t *targetMac, libnet_t *l); 
 
-    void *
-arp_poison(void *arg_ptr);
+    gpointer
+arp_poison(gpointer arg_ptr);

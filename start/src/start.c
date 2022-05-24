@@ -12,18 +12,23 @@ start(GtkWidget *widget, gpointer data) {
     uint8_t *target1_mac = ec_malloc(6);
     uint8_t *target2_mac = ec_malloc(6);
 
-    pthread_t threadForwardId, threadPoisonId;
-
     // Show text in statusTextview
 
     GtkTextBuffer *buffer;
     GtkTextIter start, end;
     GtkTextIter iter;
 
+    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(dataPass->chatView));
+    gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
+    gtk_text_buffer_insert(buffer, &iter, "cHAT:\n", -1);
+
+
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(dataPass->statusView));
     gtk_text_buffer_get_iter_at_offset(buffer, &start, 0);
     gtk_text_buffer_get_iter_at_offset(buffer, &end, 1000);
     gtk_text_buffer_delete(buffer, &start, &end);
+
+
 
 
     gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
@@ -78,12 +83,20 @@ start(GtkWidget *widget, gpointer data) {
     dataPass->ip2 = target2Ip;
     dataPass->mac1 = target1_mac;
     dataPass->mac2 = target2_mac;
+    dataPass->dataSentByUsTo1 = 0;
+    dataPass->dataSentByUsTo2 = 0;
+    dataPass->header1 = ec_malloc(400);
+    dataPass->header2 = ec_malloc(400);
+    
+    
     
     // Start ARP-Poisoning on different thread 
     g_thread_new("thread", arp_poison, dataPass);
-    gtk_text_buffer_insert(buffer, &iter, "ARP-Poisoning gestartet", -1);
+    gtk_text_buffer_insert(buffer, &iter, "ARP-Poisoning gestartet\n", -1);
 
     // Start ip forwarding on different thread 
+    g_thread_new("thread", forward, dataPass);
+    gtk_text_buffer_insert(buffer, &iter, "Weiterleiten gestartet\n", -1);
     //pthread_create(&threadForwardId, NULL, forward, (void *)dataPass);
 
 }
